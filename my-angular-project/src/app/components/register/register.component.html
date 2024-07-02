@@ -1,0 +1,12 @@
+<div class="container">
+    <h1>User Registration</h1>
+    <form (ngSubmit)="onSubmit()" enctype="multipart/form-data">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required [(ngModel)]="username">
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required [(ngModel)]="password">
+        <label for="image">Profile Image:</label>
+        <input type="file" id="image" name="image" accept="image/*" (change)="onFileChange($event)">
+        <button type="submit">Register</button>
+    </form>
+</div>
