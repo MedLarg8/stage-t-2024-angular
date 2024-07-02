@@ -1,8 +1,8 @@
 <div class="login-page">
     <div class="form">
         <form class="login-form" (ngSubmit)="onSubmit()">
-            <input type="text" name="username" placeholder="Username" required [(ngModel)]="username">
-            <input type="password" name="password" placeholder="Password" required [(ngModel)]="password">
+            <input type="text" name="username" placeholder="username" required [(ngModel)]="username">
+            <input type="password" name="password" placeholder="password" required [(ngModel)]="password">
             <button type="submit">Login</button>
             <p class="message">Not registered? <a routerLink="/register">Create an account</a></p>
         </form>

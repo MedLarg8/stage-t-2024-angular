@@ -25,13 +25,13 @@ face_match = False
 recognition_started = False  # Flag to track if recognition is started
 
 # Load reference image
-reference_img = cv2.imread("reference.jpg")  # Update with your reference image path
+
 
 
 UPLOAD_FOLDER = "static"
 
 app = Flask(__name__)
-CORS(app)
+CORS(app,supports_credentials=True)
 app.secret_key = 'secret-key'
 
 # MySQL Config
@@ -101,24 +101,33 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        print(request.json)
+
+        username = request.json.get('username')
+        password = request.json.get('password')
+        print(username, "         ",password,isinstance(username,str))
+        
+        if not username or not password:
+            return jsonify({'error': 'Missing username or password'}), 400
 
         cur = mysql.connection.cursor()
         cur.execute("SELECT * FROM user WHERE username = %s", [username])
         user = cur.fetchone()
-        print("user : ",user)
+        
         bpassword = password.encode('utf-8')
         bpassword = hashlib.sha1(bpassword).hexdigest()
         cur.close()
         if user and check_imprint_validity(username):  # user[2] is the password_hash column
+            print("valid user")
             if bpassword==user[2]:
+                print("valid")
                 session['username'] = user[1]  # user[1] is the username column
                 return redirect(url_for('face_recognition'))
             else:
                 print(user[2],"passed password is :",bpassword)
                 print("invalid password hash")
         else:
+            print("invalid2")
             flash('Invalid user imprint, this user is not elligible to login. Please try again.', 'danger')
     return render_template('login.html')
 
