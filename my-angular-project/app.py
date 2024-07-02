@@ -11,6 +11,7 @@ from deepface import DeepFace
 import threading
 import cv2
 import functools
+from flask_cors import CORS
 
 from project_functions import create_database_client, Client, check_imprint_validity, pass_transaction, get_client_by_username, Transaction, create_database_transaction
 
@@ -30,6 +31,7 @@ reference_img = cv2.imread("reference.jpg")  # Update with your reference image 
 UPLOAD_FOLDER = "static"
 
 app = Flask(__name__)
+CORS(app)
 app.secret_key = 'secret-key'
 
 # MySQL Config
@@ -38,6 +40,7 @@ app.config['MYSQL_USER'] = 'root'
 app.config['MYSQL_PASSWORD'] = ''
 app.config['MYSQL_DB'] = 'facial_recognition_table'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 mysql = MySQL(app)
 
