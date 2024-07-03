@@ -2,9 +2,9 @@
     <h1>Make a Transaction</h1>
     <form class="form" (ngSubmit)="onSubmit()">
         <label for="recipient">Recipient Username:</label>
-        <input type="text" id="recipient" name="recipient" required [(ngModel)]="recipient">
+        <input type="text" id="recipient" name="recipient" required [(ngModel)]="recipient" />
         <label for="value">Value:</label>
-        <input type="number" id="value" name="value" required [(ngModel)]="value">
+        <input type="number" id="value" name="value" required [(ngModel)]="value" />
         <button type="submit">Submit</button>
     </form>
 </div>

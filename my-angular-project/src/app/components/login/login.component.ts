@@ -20,10 +20,14 @@ export class LoginComponent {
     };
   
     this.http.post('http://localhost:5000/login', loginData, { withCredentials: true }).subscribe(
-      response => {
+      (response: any) => {
         console.log('Login successful', response);
-        // Navigate to another page after login
-        this.router.navigate(['/face_recognition']);
+        if (response.username) {
+          // Store the username or other details as needed
+          sessionStorage.setItem('username', response.username);
+          // Navigate to face recognition page with username parameter
+          this.router.navigate(['/face_recognition'], { queryParams: { username: response.username } });
+        }
       },
       error => {
         console.error('Login failed', error);

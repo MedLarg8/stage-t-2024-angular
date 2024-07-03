@@ -9,7 +9,7 @@ const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'face-recognition', component: FaceRecognitionComponent },
+  { path: 'face_recognition', component: FaceRecognitionComponent },
   { path: 'transaction', component: TransactionComponent }
 ];
 

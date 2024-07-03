@@ -21,7 +21,7 @@ cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 counter = 0
-face_match = False
+face_match = True
 recognition_started = False  # Flag to track if recognition is started
 
 # Load reference image
@@ -104,8 +104,9 @@ def login():
         print(request.json)
 
         username = request.json.get('username')
+        session['username'] = username
         password = request.json.get('password')
-        print(username, "         ",password,isinstance(username,str))
+        print(username, "         ", password, isinstance(username, str))
         
         if not username or not password:
             return jsonify({'error': 'Missing username or password'}), 400
@@ -117,46 +118,69 @@ def login():
         bpassword = password.encode('utf-8')
         bpassword = hashlib.sha1(bpassword).hexdigest()
         cur.close()
+        
         if user and check_imprint_validity(username):  # user[2] is the password_hash column
             print("valid user")
-            if bpassword==user[2]:
+            if bpassword == user[2]:
                 print("valid")
                 session['username'] = user[1]  # user[1] is the username column
-                return redirect(url_for('face_recognition'))
+                print("the passed user is :",user[1])
+                
+                # Return JSON response with a flag indicating successful login
+                return jsonify({'message': 'Login successful', 'username': user[1]}), 200
             else:
-                print(user[2],"passed password is :",bpassword)
+                print(user[2], "passed password is:", bpassword)
                 print("invalid password hash")
+                return jsonify({'error': 'Invalid password'}), 401
         else:
             print("invalid2")
-            flash('Invalid user imprint, this user is not elligible to login. Please try again.', 'danger')
+            flash('Invalid user imprint, this user is not eligible to login. Please try again.', 'danger')
+            return jsonify({'error': 'Invalid user imprint, this user is not eligible to login. Please try again.'}), 403
     return render_template('login.html')
 
-@app.route('/transaction', methods=['GET','POST'])
+@app.route('/transaction', methods=['POST'])
 def transaction():
-    print("transaction")
-    if request.method == 'POST':
-        print("post")
-        sender_username = session['username']
-        recepient_username = request.form['recipient']
-        value = int(request.form['value'])
-        print("sender username is : ",sender_username)
-        print("recepient username is : ",recepient_username)
-        sender = get_client_by_username(sender_username)
-        print("SENDER :", sender)
-        recepient = get_client_by_username(recepient_username)
-        print("RECIEPIENT :",recepient)
-        transaction = Transaction(sender, recepient,value)
-        if create_database_transaction(transaction):
-            print("TRANSACTION CREATED !!!!!!!!!!")
-            pass_transaction(transaction)
-        else:
-            print("TRANSACTION NOT CREATED !!!!!!!!!")
-        return redirect(url_for('transaction'))
-    return render_template('transaction.html')
+    print("entered /transaction")
+
+    # Retrieve JSON data from the request
+    transaction_data = request.get_json()
+
+    # Ensure session and username are present
+    if 'username' not in session:
+        return jsonify({'error': 'User not logged in'}), 401
+
+    sender_username = session['username']
+    recipient_username = transaction_data.get('recipient')
+    value = transaction_data.get('value')
+
+    if not sender_username or not recipient_username or not value:
+        return jsonify({'error': 'Missing required data (username, recipient, or value)'}), 400
+
+    sender = get_client_by_username(sender_username)
+    recipient = get_client_by_username(recipient_username)
+
+    if not sender or not recipient:
+        return jsonify({'error': 'Sender or recipient not found in the database'}), 404
+
+    # Create transaction object
+    transaction = Transaction(sender, recipient, value)
+
+    # Attempt to create the transaction in the database
+    if create_database_transaction(transaction):
+        pass_transaction(transaction)
+        return jsonify({'message': 'Transaction created successfully'}), 200
+    else:
+        return jsonify({'error': 'Failed to create transaction'}), 500
+
+
 
 
 @app.route('/face_recognition', methods=['GET', 'POST'])
 def face_recognition():
+    match = False
+    print("entered face_recognition")
+    if 'username' not in session:
+        return jsonify({'error' : 'User not logged in'}), 401
     if request.method == 'GET':
         return render_template('face_recognition.html')
     elif request.method == 'POST':
@@ -191,6 +215,7 @@ def logout():
 
 def check_face(frame, username):
     global face_match
+    print("entered check_face")
     with app.app_context():
         try:
             cur = mysql.connection.cursor()
@@ -273,10 +298,10 @@ def stop_recognition():
         recognition_started = False
         if face_match:
             print("face match true")
-            return redirect(url_for('transaction'))
+            return jsonify({'data': {'match': True}})
         else:
             print("face match false")
-            return jsonify({'message': 'Recognition stopped'})
+            return jsonify({'data': {'match': False}})
     except Exception as e:
         print(f"Error in stop_recognition route: {e}")
         return jsonify({'error': 'Internal Server Error'}), 500

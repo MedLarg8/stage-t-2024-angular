@@ -1,7 +1,7 @@
 <div class="container">
     <h2>Face Recognition</h2>
     <div id="message"></div>
-    <button id="recognize" (click)="toggleRecognition()">Start Recognition</button>
+    <button id="recognize" (click)="toggleRecognition()">{{ buttonText }}</button>
     <br><br>
-    <img id="video_feed" src="{{ videoFeedUrl }}" alt="Video Feed" width="640" height="480">
-</div>
+    <img id="video_feed" [src]="videoFeedUrl" alt="Video Feed" width="640" height="480">
+  </div>

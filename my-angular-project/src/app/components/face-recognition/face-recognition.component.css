@@ -5,7 +5,7 @@ body {
 }
 
 .container {
-    max-width: 600px;
+    max-inline-size: 600px;
     margin: 20px auto;
     background: white;
     padding: 20px;
@@ -14,18 +14,18 @@ body {
 }
 
 h2 {
-    margin-bottom: 20px;
+    margin-block-end: 20px;
 }
 
 video {
-    width: 100%;
-    height: auto;
-    margin-bottom: 20px;
+    inline-size: 100%;
+    block-size: auto;
+    margin-block-end: 20px;
     border-radius: 5px;
 }
 
 #message {
-    margin-top: 20px;
+    margin-block-start: 20px;
     padding: 10px;
     background-color: #f0f0f0;
     border: 1px solid #ccc;

@@ -10,7 +10,7 @@ export class TransactionService {
 
   constructor(private http: HttpClient) {}
 
-  createTransaction(recipient: string, value: number): Observable<any> {
-    return this.http.post<any>(`${this.baseUrl}/transaction`, { recipient, value });
+  createTransaction(sender: string, recipient: string, value: number): Observable<any> {
+    return this.http.post<any>(`${this.baseUrl}/transaction`, { sender, recipient, value });
   }
 }
