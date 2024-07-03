@@ -146,10 +146,9 @@ def transaction():
     transaction_data = request.get_json()
 
     # Ensure session and username are present
-    if 'username' not in session:
-        return jsonify({'error': 'User not logged in'}), 401
+    
 
-    sender_username = session['username']
+    sender_username = transaction_data.get('sender')
     recipient_username = transaction_data.get('recipient')
     value = transaction_data.get('value')
 

@@ -14,7 +14,7 @@ export class TransactionComponent {
   constructor(private http: HttpClient, private router: Router) { }
 
   onSubmit() {
-    const sender = sessionStorage.getItem('sender'); // Retrieve sender from session storage
+    const sender = sessionStorage.getItem('username'); // Retrieve sender from session storage
     if (!sender) {
       console.error('Sender information not found in session.');
       return;
@@ -26,13 +26,14 @@ export class TransactionComponent {
       value: this.value
     };
 
-    this.http.post('http://localhost:5000/transaction', transactionData).subscribe(
+    this.http.post('http://localhost:5000/transaction', transactionData, { withCredentials: true }).subscribe(
       (response: any) => {
         console.log('Transaction successful', response);
         // Redirect to a success page if needed
         // this.router.navigate(['/transaction']);
       },
       error => {
+        console.log('sender :'+sender)
         console.error('Transaction failed', error);
       }
     );

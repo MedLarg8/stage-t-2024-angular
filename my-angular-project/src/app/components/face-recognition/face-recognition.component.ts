@@ -26,6 +26,7 @@ export class FaceRecognitionComponent implements OnInit {
       this.http.get('http://localhost:5000/start_recognition').subscribe(
         response => {
           console.log('Recognition started');
+          console.log('session storge is filled with :'+this.username)
           this.recognitionStarted = true;
           this.buttonText = 'Stop Recognition';  // Change button text
         },
