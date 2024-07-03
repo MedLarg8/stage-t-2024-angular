@@ -30,11 +30,12 @@ export class TransactionComponent {
       (response: any) => {
         console.log('Transaction successful', response);
         // Redirect to a success page if needed
-        // this.router.navigate(['/transaction']);
+        this.router.navigate(['/transaction']);
       },
       error => {
         console.log('sender :'+sender)
         console.error('Transaction failed', error);
+        this.router.navigate(['/transaction']);
       }
     );
   }

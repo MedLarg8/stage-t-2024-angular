@@ -28,7 +28,7 @@ recognition_started = False  # Flag to track if recognition is started
 
 
 
-UPLOAD_FOLDER = "static"
+UPLOAD_FOLDER = "my-angular-project\static"
 
 app = Flask(__name__)
 CORS(app,supports_credentials=True)
@@ -62,13 +62,12 @@ def home():
         return render_template('home.html', username=session['username'], image=image)
     return redirect(url_for('login'))
 
-@app.route('/register', methods=['GET', 'POST'])
+@app.route('/register', methods=['POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form.get('username')
+        password = request.form.get('password')
         bpassword = password.encode('utf-8')
-
 
         # Handle profile image upload
         if 'image' in request.files:
@@ -92,11 +91,12 @@ def register():
 
         if clientCreated:
             flash('You have successfully registered! Please log in.', 'success')
-            return redirect(url_for('login'))
+            return jsonify({'message':'success'})
         else:
             flash('Error in registration. Please try again.', 'danger')
+            return jsonify({'message':'fail'})
 
-    return render_template('register.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -114,28 +114,30 @@ def login():
         cur = mysql.connection.cursor()
         cur.execute("SELECT * FROM user WHERE username = %s", [username])
         user = cur.fetchone()
-        
+        print("user is :",user)
         bpassword = password.encode('utf-8')
         bpassword = hashlib.sha1(bpassword).hexdigest()
         cur.close()
-        
-        if user and check_imprint_validity(username):  # user[2] is the password_hash column
-            print("valid user")
-            if bpassword == user[2]:
-                print("valid")
-                session['username'] = user[1]  # user[1] is the username column
-                print("the passed user is :",user[1])
-                
-                # Return JSON response with a flag indicating successful login
-                return jsonify({'message': 'Login successful', 'username': user[1]}), 200
+        if user:
+            if bpassword == user[2]:  # user[2] is the password_hash column
+                print("valid user")
+                if check_imprint_validity(username):
+                    print("valid")
+                    session['username'] = user[1]  # user[1] is the username column
+                    print("the passed user is :",user[1])
+                    
+                    # Return JSON response with a flag indicating successful login
+                    return jsonify({'message': 'Login successful', 'username': user[1]}), 200
+                else:
+                    print(user[2], "passed password is:", bpassword)
+                    print("invalid imprint")
+                    return jsonify({'error': 'Invalid user imprint, this user is not eligible to login. Please try again.'}), 401
             else:
-                print(user[2], "passed password is:", bpassword)
-                print("invalid password hash")
-                return jsonify({'error': 'Invalid password'}), 401
+                print("invalid2")
+                #flash('Invalid user imprint, this user is not eligible to login. Please try again.', 'danger')
+                return jsonify({'error': 'Invalid password'}), 403
         else:
-            print("invalid2")
-            flash('Invalid user imprint, this user is not eligible to login. Please try again.', 'danger')
-            return jsonify({'error': 'Invalid user imprint, this user is not eligible to login. Please try again.'}), 403
+            return jsonify({'error': 'This user does not exist.'}), 403
     return render_template('login.html')
 
 @app.route('/transaction', methods=['POST'])
@@ -152,8 +154,8 @@ def transaction():
     recipient_username = transaction_data.get('recipient')
     value = transaction_data.get('value')
 
-    if not sender_username or not recipient_username or not value:
-        return jsonify({'error': 'Missing required data (username, recipient, or value)'}), 400
+    if  not recipient_username or not value:
+        return jsonify({'error': 'Missing required data (recipient, or value)'}), 400
 
     sender = get_client_by_username(sender_username)
     recipient = get_client_by_username(recipient_username)
@@ -169,7 +171,7 @@ def transaction():
         pass_transaction(transaction)
         return jsonify({'message': 'Transaction created successfully'}), 200
     else:
-        return jsonify({'error': 'Failed to create transaction'}), 500
+        return jsonify({'error': 'Failed to create transaction : not enough balance'}), 500
 
 
 

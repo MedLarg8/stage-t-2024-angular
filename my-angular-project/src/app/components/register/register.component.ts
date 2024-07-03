@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-register',
@@ -11,7 +12,7 @@ export class RegisterComponent {
   password: string = '';
   image: File | null = null;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private router : Router) { }
 
   onFileChange(event: any) {
     this.image = event.target.files[0];
@@ -24,9 +25,10 @@ export class RegisterComponent {
       formData.append('password', this.password);
       formData.append('image', this.image);
 
-      this.http.post('http://localhost:5000/register', formData).subscribe(
+      this.http.post('http://localhost:5000/register', formData, { withCredentials: true }).subscribe(
         response => {
           console.log('Registration successful', response);
+          this.router.navigate(['/login'],);
         },
         error => {
           console.error('Registration failed', error);
