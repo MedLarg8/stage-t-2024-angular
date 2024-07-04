@@ -12,6 +12,7 @@ export class FaceRecognitionComponent implements OnInit {
   recognitionStarted: boolean = false;
   buttonText: string = 'Start Recognition';
   username: string = ''; // Initialize username here
+  errorMessage: string ='';
 
   constructor(private http: HttpClient, private router: Router) {
     this.videoFeedUrl = 'http://localhost:5000/video_feed'; // Replace with your Flask video feed URL
@@ -61,6 +62,9 @@ export class FaceRecognitionComponent implements OnInit {
       this.router.navigate(['/transaction'], { state: stateData });
     } else {
       console.error('Username not found in sessionStorage');
+      this.errorMessage = "No user is logged in"
+      alert('Sender information not found. You will be redirected to the login page.');
+      this.router.navigate(['/login']);
       // Handle the case where username is not found in sessionStorage
     }
   }

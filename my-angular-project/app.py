@@ -1,7 +1,6 @@
 from flask import Flask, render_template, redirect, url_for, request, session, flash, jsonify,Response
 from flask_mysqldb import MySQL
-from datetime import datetime
-from empreinte_digitale import empreinte_functions
+
 import base64
 import hashlib
 import os
@@ -12,6 +11,7 @@ import threading
 import cv2
 import functools
 from flask_cors import CORS
+os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 
 from project_functions import create_database_client, Client, check_imprint_validity, pass_transaction, get_client_by_username, Transaction, create_database_transaction
 
@@ -21,7 +21,7 @@ cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 counter = 0
-face_match = False
+face_match = True
 recognition_started = False  # Flag to track if recognition is started
 
 # Load reference image
@@ -94,7 +94,7 @@ def register():
             return jsonify({'message':'success'})
         else:
             flash('Error in registration. Please try again.', 'danger')
-            return jsonify({'message':'fail'})
+            return jsonify({'error':'Error in registration. Please try again.'})
 
 
 
@@ -109,9 +109,13 @@ def login():
         print(username, "         ", password, isinstance(username, str))
         
         if not username or not password:
+            print("missing username or password")
             return jsonify({'error': 'Missing username or password'}), 400
-
+        
+        print('username and password exist')
+        print("pre creation")
         cur = mysql.connection.cursor()
+        print("cur created")
         cur.execute("SELECT * FROM user WHERE username = %s", [username])
         user = cur.fetchone()
         print("user is :",user)
@@ -131,7 +135,7 @@ def login():
                 else:
                     print(user[2], "passed password is:", bpassword)
                     print("invalid imprint")
-                    return jsonify({'error': 'Invalid user imprint, this user is not eligible to login. Please try again.'}), 401
+                    return jsonify({'error': 'Invalid user imprint, this user is not eligible to login. Please try with another user.'}), 401
             else:
                 print("invalid2")
                 #flash('Invalid user imprint, this user is not eligible to login. Please try again.', 'danger')
@@ -227,26 +231,27 @@ def check_face(frame, username):
             if not user_data:
                 print(f"No user found for username: {username}")
                 face_match = False
-                return
+                return jsonify({'error':f'No user found for username: {username}'})
 
             image_fetch = user_data[0]
             if not image_fetch:
                 print(f"No image found for user: {username}")
                 face_match = False
-                return
+                return jsonify({'error':f"No image found for user: {username}"})
 
-            image_path = os.path.join("my-angular-project/static", username, image_fetch)
+            image_path = os.path.join(UPLOAD_FOLDER, username, image_fetch)
             image = cv2.imread(image_path)
 
             if image is None:
                 print(f"Failed to read image from path: {image_path}")
                 face_match = False
-                return
+                return jsonify({'error':f"Failed to read image from path: {image_path}"})
 
             result = DeepFace.verify(frame, image)
             face_match = result['verified']
         except Exception as e:
             print(f"Error verifying face: {e}")
+            return jsonify({'error':f"Error verifying face: {e}"})
             face_match = False
 
 def generate_frames(username):
@@ -262,6 +267,7 @@ def generate_frames(username):
                 threading.Thread(target=functools.partial(check_face, frame.copy(), username)).start()
             except Exception as e:
                 print(f"Error starting thread: {e}")
+                return jsonify({'error':f"Error starting thread: {e}"})
 
         counter += 1
 
@@ -286,11 +292,15 @@ def video_feed():
 @app.route('/start_recognition', methods=['GET'])
 def start_recognition():
     global recognition_started
-    if not recognition_started:
-        recognition_started = True
-        return jsonify({'message': 'Recognition started'})
-    else:
-        return jsonify({'message': 'Recognition already started'})
+    try:
+        if not recognition_started:
+            recognition_started = True
+            return jsonify({'message': 'Recognition started'})
+        else:
+            return jsonify({'message': 'Recognition already started'})
+    except Exception as e:
+        print(f"Error in start_recognition route: {e}")
+        return jsonify({'error': 'Internal Server Error'}), 500
 
 @app.route('/stop_recognition', methods=['GET'])
 def stop_recognition():

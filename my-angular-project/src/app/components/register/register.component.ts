@@ -11,6 +11,7 @@ export class RegisterComponent {
   username: string = '';
   password: string = '';
   image: File | null = null;
+  errorMessage: string = '';
 
   constructor(private http: HttpClient, private router : Router) { }
 
@@ -32,6 +33,7 @@ export class RegisterComponent {
         },
         error => {
           console.error('Registration failed', error);
+          this.errorMessage = error.error?.error || "Unknow Error";
         }
       );
     }

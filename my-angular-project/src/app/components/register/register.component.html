@@ -9,4 +9,7 @@
         <input type="file" id="image" name="image" accept="image/*" (change)="onFileChange($event)">
         <button type="submit">Register</button>
     </form>
+    <div *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </div>
 </div>

@@ -10,6 +10,8 @@ import { Router } from '@angular/router';
 export class TransactionComponent {
   recipient: string = '';
   value: number = 0;
+  errorMessage: string ='';
+  successMessage: string ='';
 
   constructor(private http: HttpClient, private router: Router) { }
 
@@ -17,6 +19,8 @@ export class TransactionComponent {
     const sender = sessionStorage.getItem('username'); // Retrieve sender from session storage
     if (!sender) {
       console.error('Sender information not found in session.');
+      alert('Sender information not found. You will be redirected to the login page.');
+      this.router.navigate(['/login']);
       return;
     }
 
@@ -30,12 +34,15 @@ export class TransactionComponent {
       (response: any) => {
         console.log('Transaction successful', response);
         // Redirect to a success page if needed
-        this.router.navigate(['/transaction']);
+        this.successMessage = 'Transaction successful';
+        this.value =0;
+        this.recipient='';
       },
       error => {
         console.log('sender :'+sender)
         console.error('Transaction failed', error);
-        this.router.navigate(['/transaction']);
+        this.errorMessage = error.error?.error || "Unknow Error";
+        this.successMessage = '';
       }
     );
   }

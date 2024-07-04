@@ -49,3 +49,8 @@ body {
 .container button:hover {
     background-color: #45a049;
 }
+
+.error-message {
+    color: red;
+    margin-top: 10px;
+  }

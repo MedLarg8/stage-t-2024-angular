@@ -10,6 +10,7 @@ import { Router } from '@angular/router';
 export class LoginComponent {
   username: string = '';
   password: string = '';
+  errorMessage: string = '';
 
   constructor(private http: HttpClient, private router: Router) { }
 
@@ -31,6 +32,7 @@ export class LoginComponent {
       },
       error => {
         console.error('Login failed', error);
+        this.errorMessage = this.errorMessage = error.error?.error || 'An unknown error occurred';
       }
     );
   }

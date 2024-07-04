@@ -4,4 +4,8 @@
     <button id="recognize" (click)="toggleRecognition()">{{ buttonText }}</button>
     <br><br>
     <img id="video_feed" [src]="videoFeedUrl" alt="Video Feed" width="640" height="480">
+    <br>
+    <div *ngIf="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
   </div>
