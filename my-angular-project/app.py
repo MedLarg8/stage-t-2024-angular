@@ -21,7 +21,7 @@ cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 counter = 0
-face_match = True
+face_match = False
 recognition_started = False  # Flag to track if recognition is started
 
 # Load reference image
@@ -235,7 +235,7 @@ def check_face(frame, username):
                 face_match = False
                 return
 
-            image_path = os.path.join("static", username, image_fetch)
+            image_path = os.path.join("my-angular-project/static", username, image_fetch)
             image = cv2.imread(image_path)
 
             if image is None:
