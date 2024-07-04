@@ -28,7 +28,7 @@ recognition_started = False  # Flag to track if recognition is started
 
 
 
-UPLOAD_FOLDER = "my-angular-project\static"
+UPLOAD_FOLDER = "my-angular-project/static"
 
 app = Flask(__name__)
 CORS(app,supports_credentials=True)
