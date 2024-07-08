@@ -35,6 +35,7 @@ export class TransactionComponent {
         console.log('Transaction successful', response);
         // Redirect to a success page if needed
         this.successMessage = 'Transaction successful';
+        this.errorMessage ='';
         this.value =0;
         this.recipient='';
       },
