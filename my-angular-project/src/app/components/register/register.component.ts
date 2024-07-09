@@ -28,7 +28,6 @@ export class RegisterComponent {
 
       this.http.post('http://localhost:5000/register', formData, { withCredentials: true }).subscribe(
         response => {
-          console.log('Registration successful', response);
           this.router.navigate(['/login'],);
         },
         error => {

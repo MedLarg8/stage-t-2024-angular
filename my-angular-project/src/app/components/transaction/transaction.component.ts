@@ -40,7 +40,6 @@ export class TransactionComponent {
         this.recipient='';
       },
       error => {
-        console.log('sender :'+sender)
         console.error('Transaction failed', error);
         this.errorMessage = error.error?.error || "Unknow Error";
         this.successMessage = '';
