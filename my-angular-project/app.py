@@ -248,7 +248,9 @@ def check_face(frame, username):
                 return jsonify({'error':f"Failed to read image from path: {image_path}"})
 
             result = DeepFace.verify(frame, image)
+            print(f"fetched image : {image_fetch}")
             face_match = result['verified']
+            print(f"face_match : {face_match}")
         except Exception as e:
             print(f"Error verifying face: {e}")
             return jsonify({'error':f"Error verifying face: {e}"})
