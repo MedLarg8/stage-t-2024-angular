@@ -16,12 +16,12 @@ os.environ['TF_ENABLE_ONEDNN_OPTS'] = '0'
 from project_functions import create_database_client, Client, check_imprint_validity, pass_transaction, get_client_by_username, Transaction, create_database_transaction
 
 # OpenCV VideoCapture setup
-cap = cv2.VideoCapture(0, cv2.CAP_MSMF)  # Adjust the index or backend as needed
+cap = cv2.VideoCapture(0)  # Adjust the index or backend as needed
 cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 counter = 0
-face_match = True
+face_match = False
 recognition_started = False  # Flag to track if recognition is started
 
 # Load reference image
