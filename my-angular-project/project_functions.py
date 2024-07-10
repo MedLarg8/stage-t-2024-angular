@@ -158,7 +158,7 @@ def create_nonce_for_last_block():
     # if working on a digital database where each block has his own physical placement <tuto.Block object at 0x000001FF596DF6B0>
     digest = hash(block)
     # if local databse where only information is stored (strings)
-    # digest = block.Nonce 
+    # digest = block.Nonce ( this is not a very secure methode since you can have access to the entire blockchain through the nonce of one block which can give the attacker access to the entire transaction journal #its still hard to get the nonce of 1 block though) for better solution you can make an imprint for each block through the info of the block (previous_block_hash and verified_transaction) and pass that imprint to the previous_block_hash of the next block(imprint is not a proof of work) 
     cur.execute("SELECT MAX(id) FROM blockchain")
     max_id = cur.fetchone()[0]  
 
