@@ -21,7 +21,7 @@ cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 counter = 0
-face_match = False
+face_match = True
 recognition_started = False  # Flag to track if recognition is started
 
 # Load reference image
@@ -164,8 +164,14 @@ def transaction():
     sender = get_client_by_username(sender_username)
     recipient = get_client_by_username(recipient_username)
 
-    if not sender or not recipient:
-        return jsonify({'error': 'Sender or recipient not found in the database'}), 404
+    if not recipient:
+        return jsonify({'error': 'Recipient not found in the database'}), 404
+
+    if not sender:
+        return jsonify({'error':'Sender not found in the database'}), 404
+    
+    if sender_username == recipient_username:
+        return jsonify({'error' : 'You cant make this kind of transaction !!'}), 500
 
     # Create transaction object
     transaction = Transaction(sender, recipient, value)
@@ -254,7 +260,6 @@ def check_face(frame, username):
         except Exception as e:
             print(f"Error verifying face: {e}")
             return jsonify({'error':f"Error verifying face: {e}"})
-            face_match = False
 
 def generate_frames(username):
     global face_match

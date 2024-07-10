@@ -178,8 +178,8 @@ def add_transaction_to_last_block(transaction):
     
     cur.execute("SELECT verified_transactions FROM blockchain WHERE id = %s", (max_id,))
     resultat = cur.fetchone()
-    print("max id:", max_id)
-    print("signature:", transaction.signature)
+    #print("max id:", max_id)
+    #print("signature:", transaction.signature)
     
     if resultat and resultat[0]:
         cur.execute("UPDATE blockchain SET verified_transactions = CONCAT(verified_transactions, ',', %s) WHERE id = %s",
@@ -212,6 +212,7 @@ def pass_transaction(transaction):
     if b :
         if is_blockchain_empty():
             create_database_block()
+            add_transaction_to_last_block(transaction)
         else:
             if can_pass_transaction(transaction):
                 add_transaction_to_last_block(transaction)
@@ -239,8 +240,8 @@ def get_client_by_username(username):
         client = Client(username, b"0", image, balance)
         
         # Decode the keys from hex to binary and import
-        print("Public Key (hex):", public_key)
-        print("Private Key (hex):", private_key)
+        #print("Public Key (hex):", public_key)
+        #print("Private Key (hex):", private_key)
 
         try:
             client._private_key = RSA.import_key(binascii.unhexlify(private_key))
