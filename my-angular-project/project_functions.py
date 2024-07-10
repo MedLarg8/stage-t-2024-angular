@@ -155,7 +155,10 @@ def create_nonce_for_last_block():
     block.verified_transaction = verified_transactions
     block.previous_block_hash = previous_block_hash
     block.Nonce = mine(block,2)
+    # if working on a digital database where each block has his own physical placement <tuto.Block object at 0x000001FF596DF6B0>
     digest = hash(block)
+    # if local databse where only information is stored (strings)
+    # digest = block.Nonce 
     cur.execute("SELECT MAX(id) FROM blockchain")
     max_id = cur.fetchone()[0]  
 
