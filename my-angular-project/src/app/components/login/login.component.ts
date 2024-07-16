@@ -26,6 +26,9 @@ export class LoginComponent {
         if (response.username) {
           // Store the username or other details as needed
           sessionStorage.setItem('username', response.username);
+          if(response.username == "admin"){
+            this.router.navigate(['/admin_panel'])
+          }
           // Navigate to face recognition page with username parameter
           this.router.navigate(['/face_recognition'], { queryParams: { username: response.username } });
         }

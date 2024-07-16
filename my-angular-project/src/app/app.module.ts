@@ -9,6 +9,13 @@ import { TransactionComponent } from './components/transaction/transaction.compo
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { AdminPanelComponent } from './components/admin-panel/admin-panel.component';
+import { UsersComponent } from './components/users/users.component';
+import { TransactionsComponent } from './components/transactions/transactions.component';
+import { BlockchainComponent } from './components/blockchain/blockchain.component';
+import { NavbarComponent } from './components/navbar/navbar.component';
+import { TransactionDetailsComponent } from './components/transaction-details/transaction-details.component';
+import { RouterOutlet } from '@angular/router';
 
 @NgModule({
   declarations: [
@@ -16,14 +23,22 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     LoginComponent,
     RegisterComponent,
     FaceRecognitionComponent,
-    TransactionComponent
+    TransactionComponent,
+    AdminPanelComponent,
+    UsersComponent,
+    TransactionsComponent,
+    BlockchainComponent,
+    NavbarComponent,
+    TransactionDetailsComponent
   ],
   imports: [
+    AppRoutingModule,
     BrowserModule,
     AppRoutingModule,
     FormsModule,
     HttpClientModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
+    RouterOutlet
   ],
   providers: [],
   bootstrap: [AppComponent]

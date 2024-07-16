@@ -22,10 +22,17 @@ cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
 cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
 counter = 0
-face_match = True
+face_match = False
 recognition_started = False  # Flag to track if recognition is started
 
 # Load reference image
+
+#
+import sys
+from datetime import datetime
+sys.path.append(os.path.join(os.path.dirname(__file__), 'empreinte_digitale'))
+from empreinte_digitale import create_empreinte
+#
 
 
 
@@ -33,6 +40,7 @@ UPLOAD_FOLDER = "my-angular-project/static"
 
 app = Flask(__name__)
 CORS(app,supports_credentials=True)
+CORS(app, resources={r"/users": {"origins": "http://localhost:4200"}})
 app.secret_key = 'secret-key'
 
 # MySQL Config
@@ -98,6 +106,139 @@ def register():
             return jsonify({'error':'Error in registration. Please try again.'})
 
 
+######
+@app.route('/users', methods=['GET', 'POST'])
+def fetch_users():
+    if request.method == 'GET':
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT id, username, date, balance FROM user")
+        
+        user_list = []
+        row = cur.fetchone()
+        while row is not None:
+            user_dict = {'id': row[0], 'username': row[1], 'date': row[2], 'balance': row[3]}
+            user_list.append(user_dict)
+            row = cur.fetchone()
+        cur.close()
+        return jsonify(user_list)
+    
+@app.route('/users/<int:id>', methods=['DELETE'])
+def delete_user(id):
+    if request.method == 'DELETE':
+        try:
+            cur = mysql.connection.cursor()
+            cur.execute("DELETE FROM user WHERE id = %s", [id])
+            mysql.connection.commit()
+            cur.close()
+            return jsonify({'message': 'User deleted successfully'}), 200
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+        
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
+@app.route('/transactions', methods=['GET', 'POST'])
+def fetchTransactions():
+    if request.method == 'GET':
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT id, sender, recepient, value, time, signature FROM transactions")
+        
+        transactions_list = []
+        row = cur.fetchone()
+        while row is not None:
+            sender_key = row[1]
+            recepient_key = row[2]
+            signature = row[5]
+
+            cur_sender = mysql.connection.cursor()
+            cur_sender.execute("SELECT username FROM user WHERE `private-key` = %s", [sender_key])
+            sender_username = cur_sender.fetchone()
+            sender_username = sender_username[0] if sender_username else 'Unknown Sender'
+            cur_sender.close()
+
+            cur_recipient = mysql.connection.cursor()
+            cur_recipient.execute("SELECT username FROM user WHERE `public-key` = %s", [recepient_key])
+            recipient_username = cur_recipient.fetchone()
+            recipient_username = recipient_username[0] if recipient_username else 'Unknown Recipient'
+            cur_recipient.close()
+
+            cur_blockchain = mysql.connection.cursor()
+            cur_blockchain.execute("SELECT id FROM blockchain WHERE FIND_IN_SET(%s, verified_transactions)", [signature])
+            blockchain_id_row = cur_blockchain.fetchone()
+            blockchain_id = blockchain_id_row[0] if blockchain_id_row else 'Not Found'
+            cur_blockchain.close()
+
+            transactions_dict = {
+                'id': row[0],
+                'sender': sender_username,
+                'recepient': recipient_username,
+                'value': row[3],
+                'time': row[4],
+                'signature': signature,
+                'blockchain_id': blockchain_id
+            }
+            transactions_list.append(transactions_dict)
+            row = cur.fetchone()
+        cur.close()
+        return jsonify(transactions_list)
+    
+@app.route('/transaction_details/<int:id>', methods=['DELETE'])
+def delete_transaction(id):
+    if request.method == 'DELETE':
+        logging.debug("id: ", id)
+        cur = mysql.connection.cursor()
+        cur.execute("DELETE FROM transactions WHERE id = %s", [id])
+        mysql.connection.commit()
+        cur.close()
+        return jsonify({'message': 'transaction deleted successfully'}), 200
+
+@app.route('/blockchain', methods=['GET', 'POST'])
+def fetch_blockchain():
+    if request.method == 'GET':
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT id, verified_transactions FROM blockchain")
+        blockchain_list = []
+
+        row = cur.fetchone()
+        while row is not None:
+            blockchain_id = row[0]
+            verified_transactions = row[1]
+            transactions_details = []
+
+            if verified_transactions:
+               
+                cur2 = mysql.connection.cursor()
+                cur2.execute("SELECT id FROM transactions WHERE FIND_IN_SET(signature, %s)", [verified_transactions])                
+                transaction_row = cur2.fetchone()
+
+                while transaction_row is not None:
+                    transactions_details.append(transaction_row[0])
+                    transaction_row = cur2.fetchone()
+                
+                cur2.close()
+
+            blockchain_dict = {
+                'id': blockchain_id,
+                'verified_transactions': transactions_details
+            }
+            blockchain_list.append(blockchain_dict)
+            row = cur.fetchone()
+
+        cur.close()
+        return jsonify(blockchain_list)
+    
+@app.route('/blockchain/<int:id>', methods=['DELETE'])
+def delete_block(id):
+    if request.method == 'DELETE':
+        logging.debug("id: ", id)
+        cur = mysql.connection.cursor()
+        cur.execute("DELETE FROM blockchain WHERE id = %s", [id])
+        mysql.connection.commit()
+        cur.close()
+        return jsonify({'message': 'block deleted successfully'}), 200
+
+######
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -129,14 +270,26 @@ def login():
                 if check_imprint_validity(username):
                     print("valid")
                     session['username'] = user[1]  # user[1] is the username column
+                    if username == "admin":
+                        print("admin session")
+                        return jsonify({'message':'admin session'})
                     print("the passed user is :",user[1])
                     
                     # Return JSON response with a flag indicating successful login
                     return jsonify({'message': 'Login successful', 'username': user[1]}), 200
+                
                 else:
-                    print(user[2], "passed password is:", bpassword)
-                    print("invalid imprint")
-                    return jsonify({'error': 'Invalid user imprint, this user is not eligible to login. Please try with another user.'}), 401
+                    ##
+                    now = datetime.now() 
+                    time = now.date()
+                    create_empreinte(username, bpassword, time)
+                    
+                    return jsonify({'message': 'New Imprint Created'})                
+                    ##
+
+                    # print(user[2], "passed password is:", bpassword)
+                    # print("invalid imprint")
+                    # return jsonify({'error': 'Invalid user imprint, this user is not eligible to login. Please try with another user.'}), 401
             else:
                 print("invalid2")
                 #flash('Invalid user imprint, this user is not eligible to login. Please try again.', 'danger')
