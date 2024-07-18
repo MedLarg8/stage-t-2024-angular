@@ -41,4 +41,16 @@ export class UsersComponent {
     );
     }
   }
+
+  validate_imprint(id : number){
+    this._shared.validate_imprint(id).subscribe(
+      response => {
+        this.getUsers();
+        alert('User Imprint Validated')
+      },
+      error => {
+        console.error('Error validating imprint:', error);
+      }
+    )
+  }
 }

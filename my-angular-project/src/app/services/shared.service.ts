@@ -19,6 +19,10 @@ export class SharedService {
     return this.http.delete(`http://localhost:5000/users/${id}`);
   }
 
+  validate_imprint(id: number){
+    return this.http.get(`http://localhost:5000/users/${id}`)
+  }
+
   transactions: any[] = [];
 
   getTransactions(): Observable<any>{

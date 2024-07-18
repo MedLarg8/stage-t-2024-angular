@@ -31,7 +31,7 @@ recognition_started = False  # Flag to track if recognition is started
 import sys
 from datetime import datetime
 sys.path.append(os.path.join(os.path.dirname(__file__), 'empreinte_digitale'))
-from empreinte_digitale import create_empreinte
+from empreinte_digitale.empreinte_functions import create_empreinte
 #
 
 
@@ -115,8 +115,13 @@ def fetch_users():
         
         user_list = []
         row = cur.fetchone()
+        if (check_imprint_validity(row[1])):
+            imprint_validity = 'valid'
+        else:
+            imprint_validity = 'invalid'
+        
         while row is not None:
-            user_dict = {'id': row[0], 'username': row[1], 'date': row[2], 'balance': row[3]}
+            user_dict = {'id': row[0], 'username': row[1], 'date': row[2], 'balance': row[3], 'imprint_validity': imprint_validity}
             user_list.append(user_dict)
             row = cur.fetchone()
         cur.close()
@@ -133,6 +138,27 @@ def delete_user(id):
             return jsonify({'message': 'User deleted successfully'}), 200
         except Exception as e:
             return jsonify({'error': str(e)}), 500
+        
+from flask import jsonify
+
+@app.route('/users/<int:id>', methods=['GET', 'POST'])
+def validate_imprint(id):
+    if request.method == 'GET':
+        cur = mysql.connection.cursor()
+        cur.execute("SELECT username, password, date FROM user WHERE id = %s", [id])
+        row = cur.fetchone()
+        
+        if row is not None:
+            cur.execute("UPDATE user SET empreinte = %s WHERE id = %s", (create_empreinte(row[0], row[1], row[2]), id))
+            mysql.connection.commit()
+            
+            return jsonify({'message': 'Empreinte updated successfully'}), 200
+        else:
+            return jsonify({'message': 'User not found'}), 404
+
+    return jsonify({'message': 'Invalid request method'}), 405
+
+
         
 import logging
 
@@ -240,7 +266,7 @@ def delete_block(id):
 
 ######
 
-@app.route('/login', methods=['GET', 'POST'])
+@app.route('/login', methods=['POST'])
 def login():
     if request.method == 'POST':
         print(request.json)
@@ -248,7 +274,7 @@ def login():
         username = request.json.get('username')
         session['username'] = username
         password = request.json.get('password')
-        print(username, "         ", password, isinstance(username, str))
+        print(username, password, isinstance(username, str))
         
         if not username or not password:
             print("missing username or password")
@@ -260,7 +286,7 @@ def login():
         print("cur created")
         cur.execute("SELECT * FROM user WHERE username = %s", [username])
         user = cur.fetchone()
-        print("user is :",user)
+        print("user is:", user)
         bpassword = password.encode('utf-8')
         bpassword = hashlib.sha1(bpassword).hexdigest()
         cur.close()
@@ -272,31 +298,23 @@ def login():
                     session['username'] = user[1]  # user[1] is the username column
                     if username == "admin":
                         print("admin session")
-                        return jsonify({'message':'admin session'})
-                    print("the passed user is :",user[1])
+                        return jsonify({'message': 'admin session'})
+                    print("the passed user is:", user[1])
                     
                     # Return JSON response with a flag indicating successful login
                     return jsonify({'message': 'Login successful', 'username': user[1]}), 200
                 
                 else:
-                    ##
-                    now = datetime.now() 
-                    time = now.date()
-                    create_empreinte(username, bpassword, time)
-                    
-                    return jsonify({'message': 'New Imprint Created'})                
-                    ##
-
-                    # print(user[2], "passed password is:", bpassword)
-                    # print("invalid imprint")
-                    # return jsonify({'error': 'Invalid user imprint, this user is not eligible to login. Please try with another user.'}), 401
+                    print(user[2], "passed password is:", bpassword)
+                    print("invalid imprint")
+                    return jsonify({'error': 'Invalid user imprint, this user is not eligible to login. Please try with another user.'}), 401
             else:
-                print("invalid2")
-                #flash('Invalid user imprint, this user is not eligible to login. Please try again.', 'danger')
+                print("invalid password")
                 return jsonify({'error': 'Invalid password'}), 403
         else:
             return jsonify({'error': 'This user does not exist.'}), 403
     return render_template('login.html')
+
 
 @app.route('/transaction', methods=['POST'])
 def transaction():
