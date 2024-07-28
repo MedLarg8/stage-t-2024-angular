@@ -107,6 +107,11 @@ def register():
 
 
 ######
+        
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
 @app.route('/users', methods=['GET', 'POST'])
 def fetch_users():
     if request.method == 'GET':
@@ -115,17 +120,17 @@ def fetch_users():
         
         user_list = []
         row = cur.fetchone()
-        if (check_imprint_validity(row[1])):
-            imprint_validity = 'valid'
-        else:
-            imprint_validity = 'invalid'
         
         while row is not None:
+            if (check_imprint_validity(row[1])):
+                imprint_validity = 'valid'
+            else:
+                imprint_validity = 'invalid'
             user_dict = {'id': row[0], 'username': row[1], 'date': row[2], 'balance': row[3], 'imprint_validity': imprint_validity}
             user_list.append(user_dict)
             row = cur.fetchone()
-        cur.close()
-        return jsonify(user_list)
+    cur.close()
+    return jsonify(user_list)
     
 @app.route('/users/<int:id>', methods=['DELETE'])
 def delete_user(id):
@@ -159,10 +164,6 @@ def validate_imprint(id):
     return jsonify({'message': 'Invalid request method'}), 405
 
 
-        
-import logging
-
-logging.basicConfig(level=logging.DEBUG)
 
 @app.route('/transactions', methods=['GET', 'POST'])
 def fetchTransactions():
