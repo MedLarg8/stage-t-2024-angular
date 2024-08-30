@@ -1,0 +1,49 @@
+<div class="relative">
+    <div class="absolute left-1/2 z-10 mt-5 flex w-screen max-w-max -translate-x-1/2 px-4">
+      <div class="w-screen max-w-sm flex-auto rounded-3xl bg-white p-4 text-sm leading-6 shadow-lg ring-1 ring-gray-900/5">
+        <div class="relative rounded-lg p-4 text-center">
+          <a class="font-semibold text-gray-900">
+            Transaction ID: {{id}}
+            <span class="absolute inset-0"></span>
+          </a>
+        </div>
+        <div class="relative rounded-lg p-4 ">
+          <a class="font-semibold text-gray-900">
+            From {{ transaction_filtred.sender }}
+            <span class="absolute inset-0"></span>
+          </a>
+        </div>
+        <div class="relative rounded-lg p-4">
+          <a class="font-semibold text-gray-900">
+            to {{ transaction_filtred.recepient }}
+            <span class="absolute inset-0"></span>
+          </a>
+        </div>
+        <div class="relative rounded-lg p-4 ">
+          <a class="font-semibold text-gray-900">
+            Value: {{transaction_filtred.value}}
+            <span class="absolute inset-0"></span>
+          </a>
+        </div>
+        <div class="relative rounded-lg p-4 ">
+          <a class="font-semibold text-gray-900">
+            Date: {{transaction_filtred.time}}
+            <span class="absolute inset-0"></span>
+          </a>
+        </div>
+        <div class="relative rounded-lg p-4 ">
+          <a class="font-semibold text-gray-900">
+            Blockchain_ID: {{transaction_filtred.blockchain_id}}
+            <span class="absolute inset-0"></span>
+          </a>
+        </div>
+        <div class="text-center relative rounded-lg p-4 bg-gray-50 hover:bg-red-50">
+          <button (click)="deleteTransaction(id)" class="font-semibold text-gray-900 hover:text-red-900">
+            Delete Transaction
+            <span class="absolute inset-0"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  

@@ -141,6 +141,7 @@ def create_empreinte(username,hash,date,liste_algo=LIST_OF_ALGORITHMS):
     passed_hash = username+hash_numbers
     h.update(passed_hash.encode('utf-8'))
     return h.hexdigest()
+    
 
 
 

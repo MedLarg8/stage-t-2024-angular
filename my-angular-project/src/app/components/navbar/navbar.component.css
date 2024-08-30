@@ -1,0 +1,24 @@
+.navbar-container {
+    width: 4rem;
+    transition: width 0.3s;
+  }
+  
+  .navbar-container.expanded {
+    width: 25%;
+  }
+  
+  .navbar-container.collapsed {
+    width: 4rem;
+  }
+  
+  .navbar-container .toggle-button {
+    position: absolute;
+    top: 0.5rem;
+    left: 4.5rem;
+    cursor: pointer;
+  }
+  
+  .navbar-container.expanded .toggle-button {
+    left: 25%;
+  }
+  
